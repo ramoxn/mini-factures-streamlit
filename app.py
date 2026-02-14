@@ -101,16 +101,15 @@ if selected_client:
 meme_lotissement = st.checkbox("Même adresse lotissement")
 
 if meme_lotissement:
-    st.session_state.lot_nom = st.session_state.client_nom
-    st.session_state.lot_rue = st.session_state.client_rue
-    st.session_state.lot_ville = st.session_state.client_ville
-    rue = st.text_input("Rue", key="client_rue")
-    ville = st.text_input("Ville", key="client_ville")
+    st.session_state.client_rue = st.session_state.lot_rue
+    st.session_state.client_ville = st.session_state.lot_ville
+
 col1, col2 = st.columns(2)
 
 with col1:
     nom = st.text_input("Nom du client", key="client_nom")
-
+    rue = st.text_input("Rue", key="client_rue")
+    ville = st.text_input("Ville", key="client_ville")
 
 
 with col2:
@@ -181,10 +180,9 @@ if selected_lotissement:
 meme_lotissement = st.checkbox("Même adresse que client principal")
 
 if meme_lotissement:
-    st.session_state.lot_nom = nom
-    st.session_state.lot_rue = rue
-    st.session_state.lot_ville = ville
-
+    st.session_state.lot_rue = st.session_state.client_rue
+    st.session_state.lot_ville = st.session_state.client_ville
+   
 colL1, colL2 = st.columns(2)
 
 with colL1:
