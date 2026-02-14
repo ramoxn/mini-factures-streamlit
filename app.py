@@ -80,6 +80,11 @@ selected_client = st.selectbox(
 
 client_info = {}
 
+if meme_lotissement:
+    lot_nom = nom
+    lot_rue = rue
+    lot_ville = ville
+
 if selected_client:
     client_info = next(c for c in clients_data if c["nom"] == selected_client)
 
@@ -96,33 +101,9 @@ with col2:
 
 meme_lotissement = st.checkbox("Même adresse lotissement")
 
-if meme_lotissement:
-    lot_nom = nom
-    lot_rue = rue
-    lot_ville = ville
+
 
 copie_avim = st.checkbox("copie Avim")
-
-st.header("Lotissement")
-
-selected_lotissement = st.selectbox(
-    "Sélectionner un lotissement",
-    [""] + lotissements_names
-)
-
-lot_info = {}
-
-if selected_lotissement:
-    lot_info = next(l for l in lotissements_data if l["nom_lotissement"] == selected_lotissement)
-
-colL1, colL2 = st.columns(2)
-
-with colL1:
-    lot_nom = st.text_input("Nom lotissement", value=lot_info.get("nom_lotissement", ""))
-
-with colL2:
-    lot_rue = st.text_input("Rue lotissement", value=lot_info.get("rue", ""))
-    lot_ville = st.text_input("Ville lotissement", value=lot_info.get("ville", ""))
 
 
 # -------------------------
@@ -151,4 +132,27 @@ with colC:
         sheet_clients.delete_rows(cell.row)
         st.warning("Client supprimé")
         st.rerun()
+        
+st.header("Lotissement")
+
+selected_lotissement = st.selectbox(
+    "Sélectionner un lotissement",
+    [""] + lotissements_names
+)
+
+lot_info = {}
+
+if selected_lotissement:
+    lot_info = next(l for l in lotissements_data if l["nom_lotissement"] == selected_lotissement)
+
+colL1, colL2 = st.columns(2)
+
+with colL1:
+    lot_nom = st.text_input("Nom lotissement", value=lot_info.get("nom_lotissement", ""))
+
+with colL2:
+    lot_rue = st.text_input("Rue lotissement", value=lot_info.get("rue", ""))
+    lot_ville = st.text_input("Ville lotissement", value=lot_info.get("ville", ""))
+
+
 
