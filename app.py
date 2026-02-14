@@ -35,10 +35,7 @@ scopes = [
 credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
 client = gspread.authorize(credentials)
 
-#creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
-#client = gspread.authorize(creds)
-
-sheet_clients = client.open("clients").sheet1
+sheet_clients = client.open("1FSOi1Eze6jyQaxEZAkbDUfBlXaJWUgAaFxLNNKyA43I").sheet1
 
 # -------------------------
 # LOAD CLIENTS
