@@ -4,6 +4,10 @@ import json
 import base64
 from google.oauth2.service_account import Credentials
 
+
+if "invoice_number" not in st.session_state:
+    st.session_state.invoice_number = generate_invoice_number()
+
 # -------------------------
 # CONFIG
 # -------------------------
@@ -273,6 +277,6 @@ with colF1:
 with colF2:
     mode_paiement = st.selectbox(
         "Mode de paiement",
-        ["Espèces", "Chèque", "Virement", "Carte bancaire", "Non payé"]
+        [ "Virement", "Espèces", "Chèque", "Carte bancaire", "Non payé"]
     )
 
