@@ -71,8 +71,7 @@ factures_data = load_factures()
 # UI
 # -------------------------
 
-if "invoice_number" not in st.session_state:
-    st.session_state.invoice_number = generate_invoice_number()
+
     
 st.title("Facturation RamoXN")
 
@@ -236,6 +235,9 @@ today = datetime.date.today()
 # Génération numéro 
 import re
 import datetime
+
+if "invoice_number" not in st.session_state:
+    st.session_state.invoice_number = generate_invoice_number()
 
 def generate_invoice_number():
     now = datetime.datetime.now()
