@@ -35,11 +35,28 @@ scopes = [
 credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
 client = gspread.authorize(credentials)
 
-sheet_clients = client.open_by_key("1FSOi1Eze6jyQaxEZAkbDUfBlXaJWUgAaFxLNNKyA43I").sheet1
+
+# -------------------------
+# SHEET LOTISSEMENTS
+# -------------------------
+
+
+
+sheet_lotissements = client.open_by_key("1b23PKic-7lUbCslLSCh_r0C4H0hr08tKiGXcjdcrMWs").sheet1
+
+def load_lotissements():
+    return sheet_lotissements.get_all_records()
+
+lotissements_data = load_lotissements()
+lotissements_names = [l["nom_lotissement"] for l in lotissements_data]
+
+
 
 # -------------------------
 # LOAD CLIENTS
 # -------------------------
+
+sheet_clients = client.open_by_key("1FSOi1Eze6jyQaxEZAkbDUfBlXaJWUgAaFxLNNKyA43I").sheet1
 
 def load_clients():
     data = sheet_clients.get_all_records()
@@ -78,6 +95,35 @@ with col2:
     email = st.text_input("Email", value=client_info.get("email", ""))
 
 meme_lotissement = st.checkbox("Même adresse lotissement")
+
+if meme_lotissement:
+    lot_nom = nom
+    lot_rue = rue
+    lot_ville = ville
+
+copie_avim = st.checkbox("copie Avim")
+
+st.header("Lotissement")
+
+selected_lotissement = st.selectbox(
+    "Sélectionner un lotissement",
+    [""] + lotissements_names
+)
+
+lot_info = {}
+
+if selected_lotissement:
+    lot_info = next(l for l in lotissements_data if l["nom_lotissement"] == selected_lotissement)
+
+colL1, colL2 = st.columns(2)
+
+with colL1:
+    lot_nom = st.text_input("Nom lotissement", value=lot_info.get("nom_lotissement", ""))
+
+with colL2:
+    lot_rue = st.text_input("Rue lotissement", value=lot_info.get("rue", ""))
+    lot_ville = st.text_input("Ville lotissement", value=lot_info.get("ville", ""))
+
 
 # -------------------------
 # ACTIONS
