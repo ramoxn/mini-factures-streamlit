@@ -226,6 +226,68 @@ with colLC:
         st.warning("Lotissement supprimé")
         st.rerun()
 
+
+
+
+# --------------------
+# date numéro fact. paiment
+
+# --------------------    
+st.header("Détails de la facturation")
+
+import datetime
+
+today = datetime.date.today()
+
+import re
+import datetime
+
+def generate_invoice_number():
+    now = datetime.datetime.now()
+    month = now.strftime("%m")
+    year = now.strftime("%y")
+    prefix = f"{month}-{year}"
+
+    factures = sheet_factures.get_all_records()
+
+    numeros = []
+
+    for f in factures:
+        num = f.get("num", "")
+        if num.startswith(prefix):
+            match = re.search(r"-(\d{3})$", num)
+            if match:
+                numeros.append(int(match.group(1)))
+
+    if numeros:
+        next_number = max(numeros) + 1
+    else:
+        next_number = 1
+
+    return f"{prefix}-{next_number:03d}"
+
+if "invoice_number" not in st.session_state:
+    st.session_state.invoice_number = generate_invoice_number()
+    
+colF1, colF2 = st.columns(2)
+
+with colF1:
+    date_intervention = st.date_input(
+        "Date d'intervention",
+        value=today
+    )
+
+    numero_facture = st.text_input(
+        "Numéro de facture",
+        key="invoice_number"
+    )
+
+with colF2:
+    mode_paiement = st.selectbox(
+        "Mode de paiement",
+        [ "Virement", "Espèces", "Chèque", "Carte bancaire", "Non payé"]
+    )
+    
 # -----------------------
 # sous client
 # -----------------------
@@ -309,64 +371,4 @@ if st.button("Voir liste des sous-clients"):
 
     else:
         st.info("Aucun sous-client ajouté")
-
-
-# --------------------
-# date numéro fact. paiment
-
-# --------------------    
-st.header("Détails de la facturation")
-
-import datetime
-
-today = datetime.date.today()
-
-import re
-import datetime
-
-def generate_invoice_number():
-    now = datetime.datetime.now()
-    month = now.strftime("%m")
-    year = now.strftime("%y")
-    prefix = f"{month}-{year}"
-
-    factures = sheet_factures.get_all_records()
-
-    numeros = []
-
-    for f in factures:
-        num = f.get("num", "")
-        if num.startswith(prefix):
-            match = re.search(r"-(\d{3})$", num)
-            if match:
-                numeros.append(int(match.group(1)))
-
-    if numeros:
-        next_number = max(numeros) + 1
-    else:
-        next_number = 1
-
-    return f"{prefix}-{next_number:03d}"
-
-if "invoice_number" not in st.session_state:
-    st.session_state.invoice_number = generate_invoice_number()
-    
-colF1, colF2 = st.columns(2)
-
-with colF1:
-    date_intervention = st.date_input(
-        "Date d'intervention",
-        value=today
-    )
-
-    numero_facture = st.text_input(
-        "Numéro de facture",
-        key="invoice_number"
-    )
-
-with colF2:
-    mode_paiement = st.selectbox(
-        "Mode de paiement",
-        [ "Virement", "Espèces", "Chèque", "Carte bancaire", "Non payé"]
-    )
 
