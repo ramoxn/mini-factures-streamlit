@@ -38,7 +38,7 @@ scopes = [
 credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
 client = gspread.authorize(credentials)
  
- st.write("Service account utilisé :", credentials.service_account_email)
+st.write("Service account utilisé :", credentials.service_account_email)
     
 # -------------------------
 # LOAD SHEET
