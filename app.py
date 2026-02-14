@@ -10,12 +10,22 @@ from google.oauth2.service_account import Credentials
 
 SHEET_CLIENTS = "clients"
 
+# 🔐 Mot de passe via secrets
+if "auth" not in st.session_state:
+    st.session_state.auth = False
+
+if not st.session_state.auth:
+    pwd = st.text_input("Mot de passe", type="password")
+    if pwd == st.secrets["APP_PASSWORD"]:
+        st.session_state.auth = True
+        st.rerun()
+    st.stop()
 # -------------------------
 # AUTH GOOGLE
 # -------------------------
 
-creds_json = base64.b64decode(st.secrets["SERVICE_ACCOUNT_JSON"])
-creds_dict = json.loads(creds_json)
+# creds_json = base64.b64decode(st.secrets["SERVICE_ACCOUNT_JSON"])
+# creds_dict = json.loads(creds_json)
 
 scopes = [
     "https://www.googleapis.com/auth/spreadsheets",
