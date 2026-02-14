@@ -75,24 +75,44 @@ client_info = {}
 
 if selected_client:
     client_info = next(c for c in clients_data if c["nom"] == selected_client)
+else:
+    client_info = {}
+
+# Initialisation session_state
+if "client_nom" not in st.session_state:
+    st.session_state.client_nom = ""
+if "client_rue" not in st.session_state:
+    st.session_state.client_rue = ""
+if "client_ville" not in st.session_state:
+    st.session_state.client_ville = ""
+if "client_tel" not in st.session_state:
+    st.session_state.client_tel = ""
+if "client_email" not in st.session_state:
+    st.session_state.client_email = ""
+
+# Si sélection client → remplir les champs
+if selected_client:
+    st.session_state.client_nom = client_info.get("nom", "")
+    st.session_state.client_rue = client_info.get("rue", "")
+    st.session_state.client_ville = client_info.get("ville", "")
+    st.session_state.client_tel = client_info.get("téléphone", "")
+    st.session_state.client_email = client_info.get("email", "")
 
 col1, col2 = st.columns(2)
-
-with col1:
-    nom = st.text_input("Nom du client", value=client_info.get("nom", ""))
-    rue = st.text_input("Rue", value=client_info.get("rue", ""))
-    ville = st.text_input("Ville", value=client_info.get("ville", ""))
-
-with col2:
-    telephone = st.text_input("Téléphone", value=client_info.get("téléphone", ""))
-    email = st.text_input("Email", value=client_info.get("email", ""))
-
 meme_lotissement = st.checkbox("Même adresse lotissement")
+with col1:
+    nom = st.text_input("Nom du client", key="client_nom")
 
 if meme_lotissement:
-    lot_nom = nom
-    lot_rue = rue
-    lot_ville = ville
+    st.session_state.lot_nom = st.session_state.client_nom
+    st.session_state.lot_rue = st.session_state.client_rue
+    st.session_state.lot_ville = st.session_state.client_ville
+    rue = st.text_input("Rue", key="client_rue")
+    ville = st.text_input("Ville", key="client_ville")
+
+with col2:
+    telephone = st.text_input("Téléphone", key="client_tel")
+    email = st.text_input("Email", key="client_email")
 
 copie_avim = st.checkbox("copie Avim")
 
