@@ -225,12 +225,6 @@ with colLC:
         sheet_lotissements.delete_rows(cell.row)
         st.warning("Lotissement supprimé")
         st.rerun()
-    
-st.header("Détails de la facturation")
-
-import datetime
-
-today = datetime.date.today()
 
 # -----------------------
 # sous client
@@ -316,14 +310,19 @@ if st.button("Voir liste des sous-clients"):
     else:
         st.info("Aucun sous-client ajouté")
 
-                
+
 # --------------------
 # date numéro fact. paiment
-# --------------------
-import re
+
+# --------------------    
+st.header("Détails de la facturation")
+
 import datetime
 
+today = datetime.date.today()
 
+import re
+import datetime
 
 def generate_invoice_number():
     now = datetime.datetime.now()
