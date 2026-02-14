@@ -24,16 +24,16 @@ if not st.session_state.auth:
 # AUTH GOOGLE
 # -------------------------
 
- creds_json = base64.b64decode(st.secrets["SERVICE_ACCOUNT_JSON"])
- creds_dict = json.loads(creds_json)
+# creds_json = base64.b64decode(st.secrets["SERVICE_ACCOUNT_JSON"])
+# creds_dict = json.loads(creds_json)
 
 scopes = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive",
 ]
 
-# credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-# client = gspread.authorize(credentials)
+ credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+ client = gspread.authorize(credentials)
 
 creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
 client = gspread.authorize(creds)
