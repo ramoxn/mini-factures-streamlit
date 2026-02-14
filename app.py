@@ -339,17 +339,17 @@ if st.button("Ajouter sous-client"):
             "prix": st.session_state.temp_prix
         })
 
-        # Reset champs
-        st.session_state.temp_nom = ""
-        st.session_state.temp_appartement = ""
-        st.session_state.temp_intervention = "Ramonage"
-        st.session_state.temp_prix = 66.00
+        # On supprime les clés avant rerun
+        for key in ["temp_nom", "temp_appartement", "temp_intervention", "temp_prix"]:
+            if key in st.session_state:
+                del st.session_state[key]
 
         st.success("Sous-client ajouté")
         st.rerun()
 
     else:
         st.warning("Veuillez entrer un nom de sous-client")
+
 
 # -------------------------
 # BOUTON VISUALISER LISTE
