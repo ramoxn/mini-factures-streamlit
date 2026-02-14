@@ -37,11 +37,6 @@ scopes = [
 
 credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
 client = gspread.authorize(credentials)
-
-# -------------------------
-
-if "invoice_number" not in st.session_state:
-    st.session_state.invoice_number = generate_invoice_number()
     
 # -------------------------
 # LOAD SHEET
@@ -76,6 +71,9 @@ factures_data = load_factures()
 # UI
 # -------------------------
 
+if "invoice_number" not in st.session_state:
+    st.session_state.invoice_number = generate_invoice_number()
+    
 st.title("Facturation RamoXN")
 
 st.header("Client principal")
