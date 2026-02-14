@@ -3,53 +3,96 @@ import gspread
 import json
 import base64
 from google.oauth2.service_account import Credentials
-from datetime import datetime
 
-st.title("Mini Gestion Factures")
+# -------------------------
+# CONFIG
+# -------------------------
 
-# 🔐 Mot de passe via secrets
-if "auth" not in st.session_state:
-    st.session_state.auth = False
+SHEET_CLIENTS = "clients"
 
-if not st.session_state.auth:
-    pwd = st.text_input("Mot de passe", type="password")
-    if pwd == st.secrets["APP_PASSWORD"]:
-        st.session_state.auth = True
-        st.rerun()
-    st.stop()
-
-# 🔑 Connexion Google via secrets
-scope = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive"
-]
+# -------------------------
+# AUTH GOOGLE
+# -------------------------
 
 creds_json = base64.b64decode(st.secrets["SERVICE_ACCOUNT_JSON"])
 creds_dict = json.loads(creds_json)
 
-creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
-client = gspread.authorize(creds)
+scopes = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive",
+]
 
-sheet = client.open("factures_test").sheet1
+credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+client = gspread.authorize(credentials)
 
-st.subheader("Ajouter une facture")
+sheet_clients = client.open(SHEET_CLIENTS).sheet1
 
-client_nom = st.text_input("Client")
-montant = st.number_input("Montant", min_value=0.0)
+# -------------------------
+# LOAD CLIENTS
+# -------------------------
 
-if st.button("Enregistrer"):
-    if client_nom == "":
-        st.error("Veuillez entrer un nom client")
-    else:
-        date = datetime.now().strftime("%d/%m/%Y")
-        sheet.append_row([date, client_nom, montant])
-        st.success("Facture ajoutée !")
+def load_clients():
+    data = sheet_clients.get_all_records()
+    return data
+
+clients_data = load_clients()
+client_names = [c["nom"] for c in clients_data]
+
+# -------------------------
+# UI
+# -------------------------
+
+st.title("Facturation RamoXN")
+
+st.header("Client principal")
+
+selected_client = st.selectbox(
+    "Sélectionner un client",
+    [""] + client_names
+)
+
+client_info = {}
+
+if selected_client:
+    client_info = next(c for c in clients_data if c["nom"] == selected_client)
+
+col1, col2 = st.columns(2)
+
+with col1:
+    nom = st.text_input("Nom du client", value=client_info.get("nom", ""))
+    rue = st.text_input("Rue", value=client_info.get("rue", ""))
+    ville = st.text_input("Ville", value=client_info.get("ville", ""))
+
+with col2:
+    telephone = st.text_input("Téléphone", value=client_info.get("téléphone", ""))
+    email = st.text_input("Email", value=client_info.get("email", ""))
+
+meme_lotissement = st.checkbox("Même adresse lotissement")
+
+# -------------------------
+# ACTIONS
+# -------------------------
+
+colA, colB, colC = st.columns(3)
+
+with colA:
+    if st.button("Ajouter client"):
+        sheet_clients.append_row([nom, rue, ville, telephone, email])
+        st.success("Client ajouté")
         st.rerun()
 
-st.subheader("Historique")
-data = sheet.get_all_values()
-st.table(data)
+with colB:
+    if st.button("Modifier client") and selected_client:
+        cell = sheet_clients.find(selected_client)
+        row = cell.row
+        sheet_clients.update(f"A{row}:E{row}", [[nom, rue, ville, telephone, email]])
+        st.success("Client modifié")
+        st.rerun()
 
-if len(data) > 1:
-    total = sum(float(row[2]) for row in data[1:] if row[2])
-    st.subheader(f"Total facturé : {total} €")
+with colC:
+    if st.button("Supprimer client") and selected_client:
+        cell = sheet_clients.find(selected_client)
+        sheet_clients.delete_rows(cell.row)
+        st.warning("Client supprimé")
+        st.rerun()
+
