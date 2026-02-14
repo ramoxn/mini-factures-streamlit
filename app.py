@@ -37,10 +37,8 @@ client = gspread.authorize(credentials)
 
 
 # -------------------------
-# SHEET LOTISSEMENTS
+# LOAD SHEET
 # -------------------------
-
-
 
 sheet_lotissements = client.open_by_key("1b23PKic-7lUbCslLSCh_r0C4H0hr08tKiGXcjdcrMWs").sheet1
 
@@ -50,11 +48,6 @@ def load_lotissements():
 lotissements_data = load_lotissements()
 lotissements_names = [l["nom_lotissement"] for l in lotissements_data]
 
-
-
-# -------------------------
-# LOAD CLIENTS
-# -------------------------
 
 sheet_clients = client.open_by_key("1FSOi1Eze6jyQaxEZAkbDUfBlXaJWUgAaFxLNNKyA43I").sheet1
 
@@ -135,12 +128,6 @@ with colC:
 # SHEET LOTISSEMENTS
 # -------------------------
         
-def load_lotissements():
-    return sheet_lotissements.get_all_records()
-
-lotissements_data = load_lotissements()
-lotissements_names = [l["nom_lotissement"] for l in lotissements_data]
-
 st.header("Lotissement")
 
 selected_lotissement = st.selectbox(
