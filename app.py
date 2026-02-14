@@ -32,11 +32,11 @@ scopes = [
     "https://www.googleapis.com/auth/drive",
 ]
 
-# credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-# client = gspread.authorize(credentials)
+credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+client = gspread.authorize(credentials)
 
-creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
-client = gspread.authorize(creds)
+#creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
+#client = gspread.authorize(creds)
 
 sheet_clients = client.open("factures_test").sheet1
 
