@@ -236,8 +236,7 @@ today = datetime.date.today()
 import re
 import datetime
 
-if "invoice_number" not in st.session_state:
-    st.session_state.invoice_number = generate_invoice_number()
+
 
 def generate_invoice_number():
     now = datetime.datetime.now()
@@ -263,7 +262,9 @@ def generate_invoice_number():
 
     return f"{prefix}-{next_number:03d}"
 
-
+if "invoice_number" not in st.session_state:
+    st.session_state.invoice_number = generate_invoice_number()
+    
 colF1, colF2 = st.columns(2)
 
 with colF1:
