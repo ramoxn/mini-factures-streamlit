@@ -38,7 +38,7 @@ scopes = [
 credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
 client = gspread.authorize(credentials)
  
-st.write("Service account utilisé :", credentials.service_account_email)
+# st.write("Service account utilisé :", credentials.service_account_email)
     
 # -------------------------
 # LOAD SHEET
@@ -299,6 +299,11 @@ st.header("Sous-clients")
 # -------------------------
 # INITIALISATION LISTE
 # -------------------------
+
+meme_client = st.checkbox("Même nom client precipale")
+
+if meme_lotissement:
+    st.session_state.temp_nom = st.session_state.client_nom 
 
 if "sous_clients" not in st.session_state:
     st.session_state.sous_clients = []
