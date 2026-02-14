@@ -232,7 +232,94 @@ import datetime
 
 today = datetime.date.today()
 
-# Génération numéro 
+# -----------------------
+# sous client
+# -----------------------
+
+st.header("Sous-clients")
+
+# -------------------------
+# INITIALISATION LISTE
+# -------------------------
+
+if "sous_clients" not in st.session_state:
+    st.session_state.sous_clients = []
+
+# Champs temporaires
+if "temp_nom" not in st.session_state:
+    st.session_state.temp_nom = ""
+
+if "temp_appartement" not in st.session_state:
+    st.session_state.temp_appartement = ""
+
+if "temp_intervention" not in st.session_state:
+    st.session_state.temp_intervention = "Ramonage"
+
+if "temp_prix" not in st.session_state:
+    st.session_state.temp_prix = 66.00
+
+colS1, colS2 = st.columns(2)
+
+with colS1:
+    st.text_input("Nom du sous-client", key="temp_nom")
+    st.text_input("Appartement", key="temp_appartement")
+
+with colS2:
+    st.text_input("Type d'intervention", key="temp_intervention")
+    st.number_input("Prix TTC", min_value=0.0, step=1.0, key="temp_prix")
+
+# -------------------------
+# BOUTON AJOUTER
+# -------------------------
+
+if st.button("Ajouter sous-client"):
+
+    if st.session_state.temp_nom.strip() != "":
+
+        st.session_state.sous_clients.append({
+            "nom": st.session_state.temp_nom,
+            "appartement": st.session_state.temp_appartement,
+            "intervention": st.session_state.temp_intervention,
+            "prix": st.session_state.temp_prix
+        })
+
+        # Reset champs
+        st.session_state.temp_nom = ""
+        st.session_state.temp_appartement = ""
+        st.session_state.temp_intervention = "Ramonage"
+        st.session_state.temp_prix = 66.00
+
+        st.success("Sous-client ajouté")
+        st.rerun()
+
+    else:
+        st.warning("Veuillez entrer un nom de sous-client")
+
+# -------------------------
+# BOUTON VISUALISER LISTE
+# -------------------------
+
+if st.button("Voir liste des sous-clients"):
+
+    if st.session_state.sous_clients:
+
+        st.subheader("Liste des sous-clients")
+
+        total = 0
+
+        for i, sc in enumerate(st.session_state.sous_clients, start=1):
+            st.write(f"{i}. {sc['nom']} | {sc['appartement']} | {sc['intervention']} | {sc['prix']} €")
+            total += sc["prix"]
+
+        st.markdown(f"### Total facture : {total:.2f} €")
+
+    else:
+        st.info("Aucun sous-client ajouté")
+
+                
+# --------------------
+# date numéro fact. paiment
+# --------------------
 import re
 import datetime
 
