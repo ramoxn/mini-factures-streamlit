@@ -58,6 +58,13 @@ def load_clients():
 clients_data = load_clients()
 client_names = [c["nom"] for c in clients_data]
 
+sheet_factures = client.open_by_key("1AvWHq-t30wgxryEJSm91TgK0dUZhuYP6-Oyb9xX9_DM").sheet1
+
+def load_factures():
+    return sheet_factures.get_all_records()
+
+factures_data = load_factures()
+
 # -------------------------
 # UI
 # -------------------------
@@ -215,4 +222,57 @@ with colLC:
         st.warning("Lotissement supprimé")
         st.rerun()
     
+st.header("Détails de la facturation")
+
+import datetime
+
+today = datetime.date.today()
+
+# Génération numéro 
+import re
+import datetime
+
+def generate_invoice_number():
+    now = datetime.datetime.now()
+    month = now.strftime("%m")
+    year = now.strftime("%y")
+    prefix = f"{month}-{year}"
+
+    factures = sheet_factures.get_all_records()
+
+    numeros = []
+
+    for f in factures:
+        num = f.get("num", "")
+        if num.startswith(prefix):
+            match = re.search(r"-(\d{3})$", num)
+            if match:
+                numeros.append(int(match.group(1)))
+
+    if numeros:
+        next_number = max(numeros) + 1
+    else:
+        next_number = 1
+
+    return f"{prefix}-{next_number:03d}"
+
+
+colF1, colF2 = st.columns(2)
+
+with colF1:
+    date_intervention = st.date_input(
+        "Date d'intervention",
+        value=today
+    )
+
+    numero_facture = st.text_input(
+        "Numéro de facture",
+        key="invoice_number"
+    )
+
+with colF2:
+    mode_paiement = st.selectbox(
+        "Mode de paiement",
+        ["Espèces", "Chèque", "Virement", "Carte bancaire", "Non payé"]
+    )
 
