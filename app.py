@@ -44,17 +44,29 @@ client = gspread.authorize(credentials)
 # LOAD SHEET
 # -------------------------
 
-
-
-
 sheet_clients = client.open_by_key("1FSOi1Eze6jyQaxEZAkbDUfBlXaJWUgAaFxLNNKyA43I").sheet1
-
+@st.cache_data(ttl=60)
 def load_clients():
-    data = sheet_clients.get_all_records()
-    return data
-
+    return sheet_clients.get_all_records()
 clients_data = load_clients()
 client_names = [c["nom"] for c in clients_data]
+
+sheet_lotissements = client.open_by_key("1b23PKic-7lUbCslLSCh_r0C4H0hr08tKiGXcjdcrMWs").sheet1
+@st.cache_data(ttl=60)
+def load_lotissements():
+    return sheet_lotissements.get_all_records()
+lotissements_data = load_lotissements()
+lotissements_names = [l["nom_lotissement"] for l in lotissements_data]
+
+sheet_factures = client.open_by_key("1AvWHq-t30wgxryEJSm91TgK0dUZhuYP6-Oyb9xX9_DM").sheet1
+@st.cache_data(ttl=60)
+def load_factures():
+    return sheet_factures.get_all_records()
+factures_data = load_factures()
+        
+
+
+
 
 
 
@@ -131,6 +143,7 @@ with colA:
     if st.button("Ajouter client"):
         sheet_clients.append_row([nom, rue, ville, telephone, email])
         st.success("Client ajouté")
+        st.cache_data.clear()
         st.rerun()
 
 with colB:
@@ -139,6 +152,7 @@ with colB:
         row = cell.row
         sheet_clients.update(f"A{row}:E{row}", [[nom, rue, ville, telephone, email]])
         st.success("Client modifié")
+        st.cache_data.clear()
         st.rerun()
 
 with colC:
@@ -146,20 +160,14 @@ with colC:
         cell = sheet_clients.find(selected_client)
         sheet_clients.delete_rows(cell.row)
         st.warning("Client supprimé")
+        st.cache_data.clear()
         st.rerun()
 
 # -------------------------
 # SHEET LOTISSEMENTS
 # -------------------------
 
-sheet_lotissements = client.open_by_key("1b23PKic-7lUbCslLSCh_r0C4H0hr08tKiGXcjdcrMWs").sheet1
 
-def load_lotissements():
-    return sheet_lotissements.get_all_records()
-
-lotissements_data = load_lotissements()
-lotissements_names = [l["nom_lotissement"] for l in lotissements_data]
-        
 st.header("Lotissement")
 
 selected_lotissement = st.selectbox(
@@ -208,6 +216,7 @@ with colLA:
     if st.button("Ajouter lotissement"):
         sheet_lotissements.append_row([lot_nom, lot_rue, lot_ville])
         st.success("Lotissement ajouté")
+        st.cache_data.clear()
         st.rerun()
 
 with colLB:
@@ -216,6 +225,7 @@ with colLB:
         row = cell.row
         sheet_lotissements.update(f"A{row}:C{row}", [[lot_nom, lot_rue, lot_ville]])
         st.success("Lotissement modifié")
+        st.cache_data.clear()
         st.rerun()
 
 with colLC:
@@ -223,6 +233,7 @@ with colLC:
         cell = sheet_lotissements.find(selected_lotissement)
         sheet_lotissements.delete_rows(cell.row)
         st.warning("Lotissement supprimé")
+        st.cache_data.clear()
         st.rerun()
 
 
@@ -230,15 +241,9 @@ with colLC:
 
 # --------------------
 # date numéro fact. paiment
-
 # -------------------- 
 
-##sheet_factures = client.open_by_key("1AvWHq-t30wgxryEJSm91TgK0dUZhuYP6-Oyb9xX9_DM").sheet1
 
-##def load_factures():
-##    return sheet_factures.get_all_records()
-
-##factures_data = load_factures()
    
 st.header("Détails de la facturation")
 
@@ -353,6 +358,7 @@ if st.button("Ajouter sous-client"):
                 del st.session_state[key]
 
         st.success("Sous-client ajouté")
+        st.cache_data.clear()
         st.rerun()
 
     else:
