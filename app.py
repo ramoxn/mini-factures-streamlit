@@ -47,8 +47,14 @@ client = gspread.authorize(credentials)
 
 
 
+sheet_clients = client.open_by_key("1FSOi1Eze6jyQaxEZAkbDUfBlXaJWUgAaFxLNNKyA43I").sheet1
 
+def load_clients():
+    data = sheet_clients.get_all_records()
+    return data
 
+clients_data = load_clients()
+client_names = [c["nom"] for c in clients_data]
 
 
 
@@ -56,14 +62,7 @@ client = gspread.authorize(credentials)
 # UI
 # -------------------------
 
-def load_lotissements():
-    return sheet_lotissements.get_all_records()
 
-lotissements_data = load_lotissements()
-lotissements_names = [l["nom_lotissement"] for l in lotissements_data]
-
-
-sheet_clients = client.open_by_key("1FSOi1Eze6jyQaxEZAkbDUfBlXaJWUgAaFxLNNKyA43I").sheet1
     
 st.title("Facturation RamoXN")
 
@@ -152,15 +151,14 @@ with colC:
 # -------------------------
 # SHEET LOTISSEMENTS
 # -------------------------
-        
-def load_clients():
-    data = sheet_clients.get_all_records()
-    return data
-    
-sheet_lotissements = client.open_by_key("1b23PKic-7lUbCslLSCh_r0C4H0hr08tKiGXcjdcrMWs").sheet1    
 
-clients_data = load_clients()
-client_names = [c["nom"] for c in clients_data]
+sheet_lotissements = client.open_by_key("1b23PKic-7lUbCslLSCh_r0C4H0hr08tKiGXcjdcrMWs").sheet1
+
+def load_lotissements():
+    return sheet_lotissements.get_all_records()
+
+lotissements_data = load_lotissements()
+lotissements_names = [l["nom_lotissement"] for l in lotissements_data]
         
 st.header("Lotissement")
 
@@ -233,7 +231,7 @@ with colLC:
 # --------------------
 # date numéro fact. paiment
 
-# --------------------  
+# -------------------- 
 
 sheet_factures = client.open_by_key("1AvWHq-t30wgxryEJSm91TgK0dUZhuYP6-Oyb9xX9_DM").sheet1
 
@@ -241,7 +239,7 @@ def load_factures():
     return sheet_factures.get_all_records()
 
 factures_data = load_factures()
-  
+   
 st.header("Détails de la facturation")
 
 import datetime
@@ -306,6 +304,7 @@ st.header("Sous-clients")
 # -------------------------
 # INITIALISATION LISTE
 # -------------------------
+
 
 
 if "sous_clients" not in st.session_state:
