@@ -3,9 +3,16 @@ import gspread
 import json
 import base64
 from google.oauth2.service_account import Credentials
-
-
-
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+import io
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.lib import colors
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.lib import pagesizes
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfmetrics
 
 # -------------------------
 # CONFIG
@@ -38,12 +45,142 @@ scopes = [
 
 credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
 client = gspread.authorize(credentials)
+
+# -------------------------
+# DRIVE SERVICE
+# -------------------------
+drive_service = build("drive", "v3", credentials=credentials)
+
+# -------------------------
+# DRIVE CONFIG
+# -------------------------
+PARENT_FOLDER_ID = "1sIipC_Y0MV_rWfg-WbGVjF4QfJ5uayEx"
  
-# st.write("Service account utilisé :", credentials.service_account_email)
+# -------------------------
+# DRIVE FUNCTIONS
+# -------------------------
+
+def create_invoice_folder(numero_facture, nom_client):
+    folder_name = f"{numero_facture}_{nom_client}"
+
+    query = (
+        f"'{PARENT_FOLDER_ID}' in parents and "
+        f"name='{folder_name}' and "
+        f"mimeType='application/vnd.google-apps.folder' and trashed=false"
+    )
+
+    results = drive_service.files().list(
+        q=query,
+        fields="files(id, name)"
+    ).execute()
+
+    files = results.get("files", [])
+    if files:
+        return files[0]["id"]
+
+    folder_metadata = {
+        "name": folder_name,
+        "mimeType": "application/vnd.google-apps.folder",
+        "parents": [PARENT_FOLDER_ID]
+    }
+
+    folder = drive_service.files().create(
+        body=folder_metadata,
+        fields="id"
+    ).execute()
+
+    return folder["id"]
+
+
+def upload_pdf_to_drive(pdf_buffer, filename, folder_id):
+    media = MediaIoBaseUpload(pdf_buffer, mimetype="application/pdf")
+
+    file_metadata = {
+        "name": filename,
+        "parents": [folder_id]
+    }
+
+    file = drive_service.files().create(
+        body=file_metadata,
+        media_body=media,
+        fields="id"
+    ).execute()
+
+    return file["id"]
+# ----------------------------------------------------------------------
+
+def generate_invoice_pdf(buffer, numero_facture, client_info, lot_info, sous_clients, total, mode_paiement, date_facture):
+
+    doc = SimpleDocTemplate(buffer, pagesize=pagesizes.A4)
+    elements = []
+
+    style = ParagraphStyle(name="Normal", fontSize=11)
+
+    elements.append(Paragraph(f"<b>FACTURE N° {numero_facture}</b>", style))
+    elements.append(Spacer(1, 12))
+
+    elements.append(Paragraph(f"Client : {client_info['nom']}", style))
+    elements.append(Paragraph(f"{client_info['rue']} - {client_info['ville']}", style))
+    elements.append(Spacer(1, 12))
+
+    elements.append(Paragraph(f"Date : {date_facture}", style))
+    elements.append(Paragraph(f"Lieu : {lot_info['nom_lotissement']}", style))
+    elements.append(Paragraph(f"{lot_info['rue']} - {lot_info['ville']}", style))
+    elements.append(Spacer(1, 20))
+
+    data = [["Désignation", "Qté", "PU TTC", "Total TTC"]]
+
+    for sc in sous_clients:
+        designation = f"{sc['intervention']} - {sc['appartement']} - {sc['nom']}"
+        data.append([designation, "1", f"{sc['prix']:.2f}", f"{sc['prix']:.2f}"])
+
+    data.append(["", "", "TOTAL", f"{total:.2f} €"])
+
+    table = Table(data, colWidths=[220, 40, 70, 70])
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0,0), (-1,0), colors.lightblue),
+        ("GRID", (0,0), (-1,-1), 0.5, colors.grey),
+        ("ALIGN", (1,1), (-1,-1), "CENTER"),
+    ]))
+
+    elements.append(table)
+    elements.append(Spacer(1, 20))
+
+    elements.append(Paragraph(f"Mode de paiement : {mode_paiement}", style))
+
+    doc.build(elements)
     
+# -------------------------------------------------------------------------
+
+def generate_attestation_pdf(buffer, numero_facture, lot_info, sc, date_intervention):
+
+    doc = SimpleDocTemplate(buffer, pagesize=pagesizes.A4)
+    elements = []
+    style = ParagraphStyle(name="Normal", fontSize=11)
+
+    elements.append(Paragraph("<b>CERTIFICAT DE RAMONAGE</b>", style))
+    elements.append(Spacer(1, 12))
+    elements.append(Paragraph(f"N° {numero_facture}", style))
+    elements.append(Spacer(1, 20))
+
+    elements.append(Paragraph(f"Nom : {sc['nom']}", style))
+    elements.append(Paragraph(f"Résidence : {lot_info['nom_lotissement']} Lot {sc['appartement']}", style))
+    elements.append(Paragraph(f"{lot_info['rue']} - {lot_info['ville']}", style))
+    elements.append(Spacer(1, 20))
+
+    elements.append(Paragraph(f"Date intervention : {date_intervention}", style))
+    elements.append(Paragraph(f"Nature : {sc['intervention']} cheminée bois", style))
+    elements.append(Spacer(1, 40))
+
+    elements.append(Paragraph("Fait à Puyvalador", style))
+
+    doc.build(elements)
+   
 # -------------------------
 # LOAD SHEETS (anti quota 429)
 # -------------------------
+
+PARENT_FOLDER_ID = "1sIipC_Y0MV_rWfg-WbGVjF4QfJ5uayEx"
 
 @st.cache_resource
 def get_sheets():
@@ -402,4 +539,68 @@ if st.button("Voir liste des sous-clients"):
 
     else:
         st.info("Aucun sous-client ajouté")
+        
+# -------------------------------------------------------------------
+
+st.divider()
+st.subheader("Génération finale")
+
+if st.button("Générer facture et attestations"):
+
+    if not st.session_state.sous_clients:
+        st.warning("Aucun sous-client ajouté")
+        st.stop()
+
+    total = sum(sc["prix"] for sc in st.session_state.sous_clients)
+
+    statut = "Payée" if mode_paiement in ["Espèces", "Carte bancaire"] else "Non payée"
+
+    folder_id = create_invoice_folder(numero_facture, nom)
+
+    # ---------- FACTURE ----------
+    invoice_buffer = io.BytesIO()
+    generate_invoice_pdf(
+        invoice_buffer,
+        numero_facture,
+        client_info,
+        lot_info,
+        st.session_state.sous_clients,
+        total,
+        mode_paiement,
+        date_intervention
+    )
+    invoice_buffer.seek(0)
+
+    invoice_filename = f"Facture_{numero_facture}_{nom}.pdf"
+    upload_pdf_to_drive(invoice_buffer, invoice_filename, folder_id)
+
+    # ---------- ATTESTATIONS ----------
+    for sc in st.session_state.sous_clients:
+        attestation_buffer = io.BytesIO()
+
+        generate_attestation_pdf(
+            attestation_buffer,
+            numero_facture,
+            lot_info,
+            sc,
+            date_intervention
+        )
+
+        attestation_buffer.seek(0)
+
+        attestation_filename = f"Attestation_{numero_facture}_{sc['nom']}_Lot{sc['appartement']}.pdf"
+        upload_pdf_to_drive(attestation_buffer, attestation_filename, folder_id)
+
+    # ---------- GOOGLE SHEET ----------
+    sheet_factures.append_row([
+        numero_facture,
+        str(date_intervention),
+        total,
+        statut,
+        nom,
+        mode_paiement
+    ])
+
+    st.success("Facture et attestations générées avec succès 🎉")
+
 
