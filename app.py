@@ -45,38 +45,19 @@ client = gspread.authorize(credentials)
 # LOAD SHEET
 # -------------------------
 
-sheet_clients = client.open_by_key("1FSOi1Eze6jyQaxEZAkbDUfBlXaJWUgAaFxLNNKyA43I").sheet1
-@st.cache_data(ttl=60)
-def load_clients():
-    return sheet_clients.get_all_records()
-clients_data = load_clients()
-client_names = [c["nom"] for c in clients_data]
+@st.cache_resource
+def get_sheets():
+    sheet_clients = client.open_by_key("1FSOi1Eze6jyQaxEZAkbDUfBlXaJWUgAaFxLNNKyA43I").sheet1
+    sheet_lotissements = client.open_by_key("1b23PKic-7lUbCslLSCh_r0C4H0hr08tKiGXcjdcrMWs").sheet1
+    sheet_factures = client.open_by_key("1AvWHq-t30wgxryEJSm91TgK0dUZhuYP6-Oyb9xX9_DM").sheet1
+    return sheet_clients, sheet_lotissements, sheet_factures
 
-sheet_lotissements = client.open_by_key("1b23PKic-7lUbCslLSCh_r0C4H0hr08tKiGXcjdcrMWs").sheet1
-@st.cache_data(ttl=60)
-def load_lotissements():
-    return sheet_lotissements.get_all_records()
-lotissements_data = load_lotissements()
-lotissements_names = [l["nom_lotissement"] for l in lotissements_data]
-
-sheet_factures = client.open_by_key("1AvWHq-t30wgxryEJSm91TgK0dUZhuYP6-Oyb9xX9_DM").sheet1
-@st.cache_data(ttl=60)
-def load_factures():
-    return sheet_factures.get_all_records()
-factures_data = load_factures()
-        
-
-
-
-
-
+sheet_clients, sheet_lotissements, sheet_factures = get_sheets()
 
 # -------------------------
 # UI
 # -------------------------
-
-
-    
+   
 st.title("Facturation RamoXN")
 
 st.header("Client principal")
