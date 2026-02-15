@@ -270,32 +270,32 @@ today = datetime.date.today()
 
 import re
 import datetime
-##def generate_invoice_number():
-##    now = datetime.datetime.now()
-##    month = now.strftime("%m")
-##    year = now.strftime("%y")
-##    prefix = f"{month}-{year}"
+def generate_invoice_number():
+    now = datetime.datetime.now()
+    month = now.strftime("%m")
+    year = now.strftime("%y")
+    prefix = f"{month}-{year}"
 
-##    factures = sheet_factures.get_all_records()
+    factures = sheet_factures.get_all_records()
 
-##    numeros = []
+    numeros = []
 
-##    for f in factures:
-##        num = f.get("num", "")
-##        if num.startswith(prefix):
-##            match = re.search(r"-(\d{3})$", num)
-##            if match:
-##                numeros.append(int(match.group(1)))
+    for f in factures:
+        num = f.get("num", "")
+        if num.startswith(prefix):
+            match = re.search(r"-(\d{3})$", num)
+            if match:
+                numeros.append(int(match.group(1)))
 
-##    if numeros:
-##        next_number = max(numeros) + 1
-##    else:
-##        next_number = 1
+    if numeros:
+        next_number = max(numeros) + 1
+    else:
+        next_number = 1
 
-##    return f"{prefix}-{next_number:03d}"
+    return f"{prefix}-{next_number:03d}"
 
-##if "invoice_number" not in st.session_state:
-##    st.session_state.invoice_number = generate_invoice_number()
+if "invoice_number" not in st.session_state:
+    st.session_state.invoice_number = generate_invoice_number()
     
 colF1, colF2 = st.columns(2)
 
