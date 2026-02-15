@@ -21,6 +21,7 @@ if not st.session_state.auth:
     pwd = st.text_input("Mot de passe", type="password")
     if pwd == st.secrets["APP_PASSWORD"]:
         st.session_state.auth = True
+        st.cache_data.clear()
         st.rerun()
     st.stop()
 # -------------------------
