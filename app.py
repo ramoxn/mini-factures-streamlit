@@ -42,7 +42,7 @@ client = gspread.authorize(credentials)
 # st.write("Service account utilisé :", credentials.service_account_email)
     
 # -------------------------
-# LOAD SHEET
+# LOAD SHEETS (anti quota 429)
 # -------------------------
 
 @st.cache_resource
@@ -52,12 +52,47 @@ def get_sheets():
     sheet_factures = client.open_by_key("1AvWHq-t30wgxryEJSm91TgK0dUZhuYP6-Oyb9xX9_DM").sheet1
     return sheet_clients, sheet_lotissements, sheet_factures
 
+
 sheet_clients, sheet_lotissements, sheet_factures = get_sheets()
+
+
+# -------------------------
+# LOAD DATA (cache 60 sec)
+# -------------------------
+
+@st.cache_data(ttl=60)
+def load_clients():
+    return sheet_clients.get_all_records()
+
+@st.cache_data(ttl=60)
+def load_lotissements():
+    return sheet_lotissements.get_all_records()
+
+@st.cache_data(ttl=60)
+def load_factures():
+    return sheet_factures.get_all_records()
+
+
+clients_data = load_clients()
+client_names = [c["nom"] for c in clients_data]
+
+lotissements_data = load_lotissements()
+lotissements_names = [l["nom_lotissement"] for l in lotissements_data]
+
+factures_data = load_factures()
+
+
+
+
+
+
 
 # -------------------------
 # UI
 # -------------------------
-   
+
+
+    
 st.title("Facturation RamoXN")
 
 st.header("Client principal")
