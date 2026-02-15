@@ -44,7 +44,17 @@ client = gspread.authorize(credentials)
 # LOAD SHEET
 # -------------------------
 
-sheet_lotissements = client.open_by_key("1b23PKic-7lUbCslLSCh_r0C4H0hr08tKiGXcjdcrMWs").sheet1
+
+
+
+
+
+
+
+
+# -------------------------
+# UI
+# -------------------------
 
 def load_lotissements():
     return sheet_lotissements.get_all_records()
@@ -54,26 +64,6 @@ lotissements_names = [l["nom_lotissement"] for l in lotissements_data]
 
 
 sheet_clients = client.open_by_key("1FSOi1Eze6jyQaxEZAkbDUfBlXaJWUgAaFxLNNKyA43I").sheet1
-
-def load_clients():
-    data = sheet_clients.get_all_records()
-    return data
-
-clients_data = load_clients()
-client_names = [c["nom"] for c in clients_data]
-
-sheet_factures = client.open_by_key("1AvWHq-t30wgxryEJSm91TgK0dUZhuYP6-Oyb9xX9_DM").sheet1
-
-def load_factures():
-    return sheet_factures.get_all_records()
-
-factures_data = load_factures()
-
-# -------------------------
-# UI
-# -------------------------
-
-
     
 st.title("Facturation RamoXN")
 
@@ -163,6 +153,15 @@ with colC:
 # SHEET LOTISSEMENTS
 # -------------------------
         
+def load_clients():
+    data = sheet_clients.get_all_records()
+    return data
+    
+sheet_lotissements = client.open_by_key("1b23PKic-7lUbCslLSCh_r0C4H0hr08tKiGXcjdcrMWs").sheet1    
+
+clients_data = load_clients()
+client_names = [c["nom"] for c in clients_data]
+        
 st.header("Lotissement")
 
 selected_lotissement = st.selectbox(
@@ -234,7 +233,15 @@ with colLC:
 # --------------------
 # date numéro fact. paiment
 
-# --------------------    
+# --------------------  
+
+sheet_factures = client.open_by_key("1AvWHq-t30wgxryEJSm91TgK0dUZhuYP6-Oyb9xX9_DM").sheet1
+
+def load_factures():
+    return sheet_factures.get_all_records()
+
+factures_data = load_factures()
+  
 st.header("Détails de la facturation")
 
 import datetime
@@ -300,10 +307,6 @@ st.header("Sous-clients")
 # INITIALISATION LISTE
 # -------------------------
 
-meme_client = st.checkbox("Même nom client precipale")
-
-if meme_lotissement:
-    st.session_state.temp_nom = st.session_state.client_nom 
 
 if "sous_clients" not in st.session_state:
     st.session_state.sous_clients = []
